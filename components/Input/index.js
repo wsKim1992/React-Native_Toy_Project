@@ -1,3 +1,4 @@
+import React from "react";
 import { TextInput, View, Text, StyleSheet } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { GlobalStyles } from "../../constant/color";
@@ -10,33 +11,32 @@ const Input = ({
 	placeholderText,
 	keyboardType,
 }) => {
-	const { control, formState } = useFormContext();
-	console.log(rules);
+	const { control, formState: { errors } } = useFormContext();
+	const [isFocus, setIsFocus] = React.useState(false);
 	return (
 		<View style={styles.inputContainer}>
 			<Controller
 				control={control}
 				name={name}
-				rules={{ ...rules }}
-				defaultValue={defaultValue}
+				rules={{
+					required: { value: true, message: '필수 항목 입니다' }
+				}}
 				render={({
-					field: { onChange, value, onBlur },
-					formState: { errors },
+					field: { onChange, value, onBlur, isTouched },
 				}) => {
-					console.log(errors);
 					return (
 						<View style={styles.textBox}>
 							<View style={styles.labelTextBox}>
 								<Text style={styles.labelText}>
 									{labelText}
 								</Text>
-								{errors && (
+								{errors[name] && (
 									<Text
 										style={
 											(styles.labelText, { color: "red" })
 										}
 									>
-										{errors.message}
+										{errors[name].message}
 									</Text>
 								)}
 							</View>
@@ -46,12 +46,14 @@ const Input = ({
 								multiline={false}
 								cursorColor={GlobalStyles.colors.accent500}
 								placeholder={placeholderText}
-								style={styles.textInputStyles}
+								style={[styles.textInputStyles, isFocus && styles.textInputFocusedStyles]}
 								onChangeText={onChange}
-								onBlur={onBlur}
+								onBlur={() => { setIsFocus(false); onBlur(); }}
+								onFocus={() => setIsFocus(true)}
 								keyboardType={
 									keyboardType ? keyboardType : "default"
 								}
+								selectionColor={GlobalStyles.colors.primary100}
 							/>
 						</View>
 					);
@@ -82,8 +84,8 @@ const styles = StyleSheet.create({
 		borderRadius: 12.5,
 		marginBottom: 10.5,
 		backgroundColor: GlobalStyles.colors.accent500,
+		padding: 5.5,
 	},
-
 	labelText: {
 		fontSize: 15.5,
 		textAlign: "left",
@@ -99,4 +101,7 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: GlobalStyles.colors.accent500,
 	},
+	textInputFocusedStyles: {
+		borderColor: GlobalStyles.colors.primary100,
+	}
 });
